@@ -1,0 +1,124 @@
+package com.HN.EireHaven.daft.ScraperService;
+
+import com.HN.EireHaven.daft.model.Listing;
+import com.HN.EireHaven.daft.model.SubUnit;
+import com.HN.EireHaven.daft.util.DaftScraperUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jsoup.Connection;
+import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class DaftScraperService {
+    @Autowired
+    DaftScraperUtil daftUtil;
+
+    private int pageNo = 1;
+    boolean hasMorePages = true;
+
+    private List<Listing> listingsList = new ArrayList<>();
+
+    private ObjectMapper mapper = new ObjectMapper();
+
+    private String urlString = "https://www.daft.ie/property-for-rent/ireland?page=" + pageNo;
+
+    public void scrapeDaft() {
+        try {
+            while (hasMorePages) {
+
+                Connection connection = daftUtil.getConnection(urlString);
+                Thread.sleep(daftUtil.getRandomMillisecond(1000, 2000)); //to make random delays
+                Document doc = connection.get();
+                String element__NEXT_DATA__ = doc.getElementById("__NEXT_DATA__").html();
+
+            //String element__NEXT_DATA__ = Files.readString(Paths.get("src/main/java/com/HN/EireHaven/resources/listings.json"));
+            JsonNode rootNode = mapper.readTree(element__NEXT_DATA__); // converting string to JSON tree model
+            JsonNode listingsNode = rootNode.path("props").path("pageProps").path("listings"); //traversing the JSON tree model to find json of listings array
+
+            //the next page after last page gives out empty listings, so traversing after last page can be stopped when listings array comes out empty
+            if (listingsNode.isArray() && listingsNode.isEmpty()) {
+                System.out.println("No more listings on page " + pageNo);
+                hasMorePages = false; // stop paging
+            } else {
+
+                System.out.println("Processing page " + pageNo + ", listings found: " + listingsNode.size());
+                fillListingsList(listingsNode);
+                pageNo++;
+            }
+
+            Thread.sleep(daftUtil.getRandomMillisecond(2000, 20000)); //to make random seconds delays when moving to next page
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void fillListingsList(JsonNode listingsNode) {
+
+
+        for (int i = 0; i < listingsNode.size(); i++) {
+
+
+            JsonNode listingNode = listingsNode.get(i).path("listing");
+            Listing listing = new Listing();
+            listing.setId(listingNode.path("id").asLong());
+            listing.setTitle(listingNode.path("title").asText());
+            listing.setPrice(listingNode.path("price").asText());
+            listing.setAbbreviatedPrice(listingNode.path("abbreviatedPrice").asText());
+            listing.setNumBedrooms(listingNode.path("numBedrooms").asText());
+            listing.setPropertyType(listingNode.path("propertyType").asText());
+            listing.setSaleType(listingNode.path("saleType").asText());
+            listing.setBerRating(listingNode.path("ber").path("rating").asText());
+            listing.setPublishDate(listingNode.path("publishDate").asLong());
+            listing.setSimplePublishDate(listingNode.path("publishDate").asLong());
+            listing.setSeoFriendlyPath(listingNode.path("seoFriendlyPath").asText());
+            listing.setLatitude(listingNode.path("point").path("coordinates").get(1).asDouble());
+            listing.setLongitude(listingNode.path("point").path("coordinates").get(0).asDouble());
+
+            List<String> imageLinks = new ArrayList<>();
+            JsonNode imagesArrayNode = listingNode.path("media").path("images");
+            for (int ii = 0; ii < imagesArrayNode.size(); ii++) {
+                String imageLink = imagesArrayNode.get(ii).path("size720x480").asText();
+                imageLinks.add(imageLink);
+            }
+            listing.setImages(imageLinks);
+
+            //subUnits
+            JsonNode subUnitsNode = listingNode.path("prs").path("subUnits");
+            if (!subUnitsNode.isEmpty()) {
+                List<SubUnit> subUnitList = new ArrayList<>();
+                for (int j = 0; j < subUnitsNode.size(); j++) {
+                    JsonNode subUnitNode = subUnitsNode.get(j);
+                    SubUnit subUnit = new SubUnit();
+                    subUnit.setId(subUnitNode.path("id").asLong());
+                    subUnit.setPrice(subUnitNode.path("price").asText());
+                    subUnit.setNumBedrooms(subUnitNode.path("numBedrooms").asText());
+                    subUnit.setNumBathrooms(subUnitNode.path("numBathrooms").asText());
+                    subUnit.setPropertyType(subUnitNode.path("propertyType").asText());
+                    subUnit.setBerRating(subUnitNode.path("ber").path("rating").asText());
+                    subUnit.setSeoFriendlyPath(subUnitNode.path("seoFriendlyPath").asText());
+
+                    List<String> subUnitsImageLinks = new ArrayList<>();
+                    JsonNode subUnitsImagesArrayNode = subUnitNode.path("media").path("images");
+                    for (int jj = 0; jj < subUnitsImagesArrayNode.size(); jj++) {
+                        String subUnitImageLinkString = subUnitsImagesArrayNode.get(jj).path("size720x480").asText();
+                        subUnitsImageLinks.add(subUnitImageLinkString);
+                    }
+                    subUnit.setImages(subUnitsImageLinks);
+
+                    subUnitList.add(subUnit);
+                }
+                listing.setSubUnits(subUnitList);
+            }
+            listingsList.add(listing);
+
+        }
+        System.out.println("list filled successfully");
+    }
+}

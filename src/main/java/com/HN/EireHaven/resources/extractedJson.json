@@ -1,0 +1,41 @@
+{
+  "id": 6306467,
+  "title": "The Carriageworks, Sheriff Street Upper, Dublin 1",
+  "price": "From €2,325 per month",
+  "abbreviatedPrice": "€2,330+",
+  "numBedrooms": "1 & 2 bed",
+  "propertyType": "Apartments",
+  "saleType": "To Let",
+  "berRating": "A2",
+  "dateOfConstruction": "NA",
+  "publishDate": 1759334822000,
+  "seoFriendlyPath": "/for-rent/the-carriageworks-grand-canal-docks-dublin-2/6306467",
+  "location": {
+    "latitude": 53.35007384919436,
+    "longitude": -6.231859682034525
+  },
+  "seller": {
+    "id": 13764,
+    "name": "The Carriageworks",
+    "type": "UNBRANDED_AGENT",
+    "branch": "The Carriageworks",
+    "logo": "https://media.daft.ie/eyJidWNrZXQiOiJtZWRpYW1hc3Rlci1zM2V1Ii...",
+    "profileImage": "https://media.daft.ie/eyJidWNrZXQiOiJtZWRpYW1hc3Rlci1zM2V1Ii..."
+  },
+  "images": [
+    "https://media.daft.ie/eyJidWNrZXQiOiJtZWRpYW1hc3Rlci1zM2V1Ii...jpg",
+    "https://media.daft.ie/eyJidWNrZXQiOiJtZWRpYW1hc3Rlci1zM2V1Ii...jpg"
+  ],
+  "subUnits": [
+    {
+      "id": 6306470,
+      "price": "€2,595 per month",
+      "numBedrooms": "1 Bed",
+      "numBathrooms": "1 Bath",
+      "propertyType": "Apartment",
+      "berRating": "A2",
+      "seoFriendlyPath": "/for-rent/apartment-1-bedroom-apartment-the-carriageworks-sheriff-street-upper-dublin-1/6306470",
+      "image": "https://media.daft.ie/eyJidWNrZXQiOiJtZWRpYW1hc3Rlci1zM2V1Ii..."
+    }
+  ]
+}
